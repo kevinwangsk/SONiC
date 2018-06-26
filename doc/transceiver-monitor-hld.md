@@ -12,11 +12,16 @@
 This document is intend to provide general information about the Transceiver and Sensor Monitoring implementation.
 The requirement is described in [Sensor and Transceiver Info Monitoring Requirement.](https://github.com/Azure/SONiC/blob/gh-pages/doc/OIDsforSensorandTransciver.MD)
 
+
 ## 1. Xcvrd design ##
 
-New Xcvrd in platform monitor container need to periodically fetch the transceiver and DOM sensor information from the eeprom. For now the time period temporarily set to 5s, need to be adjusted according the later test.
+New Xcvrd in platform monitor container is designed to fetch the transceiver and DOM sensor information from the eeprom and then update the state db with these info. 
 
-If there is transceiver and sensor status change, Xcvrd will write the new status to state DB, to store these information somes new tables will be added to STATE_DB.
+For the transceiver it's self, the type, serial number, hardware version, etc. will not change after plug in. The suitable way for transceiver information update can be triggered by transceiver plug in/out event.
+
+The transceiver dom sensor information(temperature, power,voltage, etc.) can change frequently, these information need to be updated periodically, for now the time period temporarily set to 60s(see open question 1), this time period need to be adjusted according the later on test on all vendors platform.
+
+If there is transceiver and sensor status change, Xcvrd will write the new status to state DB, to store these information some new tables will be added to STATE_DB.
  
 ### 1.1 State DB Schema ###
 
@@ -25,7 +30,7 @@ New Transceiver info table and transceiver DOM sensor table will be added to sta
 #### 1.1.1 Transceiver info Table ####
 
 	; Defines Transceiver information for a port
-	key                     = TRANSCEIVER_INFO_TABLE|ifname         ; configuration for watchdog on port
+	key                     = TRANSCEIVER_INFO|ifname         ; configuration for watchdog on port
 	; field                 = value
 	type                    = 1*255VCHAR                       ; type of sfp
 	hardwarerev             = 1*255VCHAR                       ; hardware version of sfp
@@ -36,7 +41,7 @@ New Transceiver info table and transceiver DOM sensor table will be added to sta
 #### 1.1.2 Transceiver DOM sensor Table ####
 
 	; Defines Transceiver DOM sensor information for a port
-	key                     = TRANSCEIVER_DOM_SENSOR_TABLE|ifname        ; configuration for watchdog on port
+	key                     = TRANSCEIVER_DOM_SENSOR|ifname        ; configuration for watchdog on port
 	temperature             = FLOAT                                      ; temperature value in Celsius
 	voltage                 = FLOAT                                      ; voltage value
 	rx1power                = FLOAT                                      ; rx1 power in dbm
@@ -49,19 +54,55 @@ New Transceiver info table and transceiver DOM sensor table will be added to sta
 	tx4bias                 = FLOAT                                      ; tx4 bias in mA
 
 
-### 1.2 Local cache for Transceiver info ###
+### 1.2 Access eeprom from platform container ###
 
-Xcvrd will maintain a local cache for the Transceiver and DOM status, after fetched the latest status, will compare to the local cache. TRANSCEIVER_TABLE will only be updates when there is status change 
-
-### 1.3 Xcvrd daemon flow ###
-
-Xcvrd retrieve transceiver and DOM sensor information periodically via the sfputil. 
-
-If the value of some field changed compare to local cache, local cache will be updated and Xcvrd will update the TRANSCEIVER_TABLE.  
-
-![](https://github.com/Azure/SONiC/blob/gh-pages/images/transceiver_monitoring_hld/xcvrd_flow.svg)
+Transceiver information eeprom can be accessed via read files(e.g. `/sys/bus/i2c/devices/2-0048/hwmon/hwmon4/qsfp9_eeprom`), different vendors may have these files under different folders, these folder need to be mounted to platform container so Xcvrd can access them. 
 
 
+For the convenience of implementation and reduce the time consuming, need to do enhancement to the `SfpUtilBase` class:
+
+1. `SfpUtilBase` internally should add the ability to read the eeprom and only pick up the interested bytes by given offset and number of bytes.
+
+2. `SfpUtilBase` will provide APIs `get_eeprom_sfp_info_dict(self, port_num)` and `get_eeprom_dom_info_dict(self, port_num)` to return `eeprom_if_dict` and `eeprom_dom_dict` separately, the interested values of these two dict are defined  in section 1.1.1 and 1.1.2.  In these two APIs can pick up these values from eeprom by provide the corresponding offset and number of bytes. 
+
+
+### 1.3 Transceiver plug in/out event ###
+
+Xcvrd need to be triggered by transceiver plug in/out event to refresh the transceiver info table.
+
+How to get this event is various on different platform, there is no common implementation available. 
+
+Here we define a common platform API to wait for this event in class `SfpUtilBase`: 
+
+    @abc.abstractmethod
+    def get_transceiver_change_event(self):
+        """
+        :returns: Boolean, True if call successful, False if not; 
+        dict for pysical port number and the SFP status. like {'0': 'PLUGIN', '31':'PLUGOUT'}
+        """
+        return 
+
+Each vendor need to implement this function in `SfpUtil` plugin.
+
+Xcvrd will call this API to wait for the sfp plug in/out event, following example code showing how this API will be called:
+
+    while True:
+        status, port_dict = platform_sfputil.get_transceiver_change_event()
+        if(status):
+            for key, value in port_dict.iteritems():
+                print("SFP on port: %s" was %s" % (key, value))
+                 
+
+
+### 1.4 Xcvrd daemon flow ###
+
+Xcvrd will spawn a thread to wait for the SFP plug in/out event, when event received, it will update the DB entries accordingly.
+
+A timer will be started to periodically refresh the DOM sensor information . 
+
+Detailed flow as showed in below chart: 
+
+![](https://github.com/keboliu/SONiC/blob/xcvrd-hld/images/transceiver_monitoring_hld/xcvrd_flow.svg)
 
 ## 2. SNMP Agent Change ##
 
@@ -105,7 +146,6 @@ To get the transceiver and dom sensor status, SNMP agent need to connect to STAT
 
 ## 3. Open Questions ##
 
-1. performance concern on fetch all sensor information, need test; may need to use SX_TRAP_ID_PMPE event in the future to trigger the transceiver information update instead of using polling, but how about the DOM sensor?  
+1. DOM sensor polling period need to be finalized after collecting enough data on various platform and later on test based on the new eeprom reading API.
 
-
-     
+      
