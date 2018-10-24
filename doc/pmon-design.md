@@ -13,6 +13,8 @@ Now we already have a Xcvrd daemon which collect SFP related data periodly from 
 
 During the start of the daemon, it will collect the constant datas like serial number, manufature name,.... and for the variable ones (tempreture, voltage, fan speed ....) need to collect in a certain period. A common flow for these deamons can be like below picture:
 
+![](https://github.com/keboliu/SONiC/blob/gh-pages/images/daemon-flow.svg)
+
 ### 2.1 DB Schema ###
 ## 3. Platform monitor related CLI refactor ##
 ## 4. Pmon daemons dynamically load per platfrom capability ##
