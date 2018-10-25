@@ -1,5 +1,11 @@
 # Platform monitor refactoring design #
 ## 1. migrate platform API from plugin to new platform API ##
+Old platform base APIs will be replaced by new designed API gradually. New API is well structed in a hierarchy flavor, a root "Platform" class include all the chassis in it, and each chassis will containe all the peripheral devices: PSUs, FANs, SFPs, etc.
+
+As for the vendors, the way to implement the new API will be very similiar, the different is that individual plugins will be replaced by a "sonic_platform" python package.
+
+Besides eeprom, SFP, fan, led and PSU, new base APIs were added for platform, chassis and watchdog.
+
 ### 1.1 PSU utility migration ###
 ### 1.2 SFP utility migration ###
 ### 1.3 EEPROM utility migration ###
@@ -7,13 +13,18 @@
 ### 1.5 New Chassis platfrom API implementaion ###
 ### 1.6 New Fan platfrom API implementation
 ## 2. Export platform related data to DB ##
-Currently switch peripheral devices related CLI fetch data directly from hardware via platfrom plugins, in some case it could be very slow to get the data directly from the hardware, to improvement the performance of these CLI and also for the SNMP maybe, we can collect these data and store them to the DB, and CLI/SNMP will access DB instead,  which will be much faster.
+Currently when user try to fetch switch peripheral devices related data with CLI, underneath it will directly access hardware via platfrom plugins, in some case it could be very slow, to improvement the performance of these CLI and also for the SNMP maybe, we can collect these data before hand and store them to the DB, and CLI/SNMP will access cached data(DB) instead,  which will be much faster.
 
-Now we already have a Xcvrd daemon which collect SFP related data periodly from SFP eeprom, we may take Xcvrd as reference and add other deamons(like PSU, fan, etc.). 
+Now we already have a Xcvrd daemon which collect SFP related data periodly from SFP eeprom, we may take Xcvrd as reference and add new deamons(like for PSU, fan, etc.). 
 
-During the start of the daemon, it will collect the constant datas like serial number, manufature name,.... and for the variable ones (tempreture, voltage, fan speed ....) need to collect in a certain period. A common flow for these deamons can be like below picture:
+During the start of the daemon, it will collect the constant data like serial number, manufature name,.... and for the variable ones (tempreture, voltage, fan speed ....) need to be collected periodically. A common data collection flow for these deamons can be like below picture:
 
 ![](https://github.com/keboliu/SONiC/blob/gh-pages/images/daemon-flow.svg)
+
+Besides data collection, some daemon also need to responese to the request to set device status, for example, fan daemon may need to adjust the fan speed to expected value.
+
+PSU daemon need to collect PSU numbers, PSU status, and PSU fan speed, PSU fan direction
+
 
 ### 2.1 DB Schema ###
 ## 3. Platform monitor related CLI refactor ##
