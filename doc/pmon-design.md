@@ -30,7 +30,7 @@ Take "show platform psustatus" as an example, behind the scene it's calling psu 
 
 Transceiver and PSU related CLIs will be refactored. 
 
-## 4. Pmon daemons dynamically load per platfrom capability ##
+## 4. Pmon daemons dynamically loading ##
 
 We have multi pmon daemons for different peripheral devices, like xcvrd for transceivers, ledd for front panel LEDs, etc. Later on we may add more for PSU, fan. 
 
