@@ -23,6 +23,49 @@ PSU daemon need to collect PSU numbers, PSU status, and PSU fan speed, PSU fan d
 
 
 ### 2.1 DB Schema ###
+#### 2.1.1 Chassis Table ####
+
+    mac_addr                = STRING                
+    reboot_cause            = STRING                
+    fan_num                 = INT                   
+    fan_list                = STRING_ARRAY   
+    psu_num                 = INT
+    psu_list                = STRING_ARRAY
+    watchdog                = WATCHDOG_CLASS
+    
+#### 2.1.2 Device Table ####
+
+    presence                = BOOLEAN                
+    model_num               = STRING                
+    serial_num              = STRING                   
+    status                  = BOOLEAN
+    change_event            = STRING        
+
+#### 2.1.3 Fan Table ####
+
+    direction                = STRING                
+    speed                    = INT                
+    speed_tolerance          = INT                   
+    speed_target             = INT
+    led_status               = STRING 
+    
+
+#### 2.1.3 Platform Table ####
+
+    chassis_num              = INT                
+    chassis_list             = STRING_ARRAY               
+
+#### 2.1.4 Psu Table ####
+    fan_direction            = STRING                
+    fan_speed                = INT                
+    fan_speed_tolerance      = INT                   
+    fan_speed_target         = INT
+    fan_led_status           = STRING 
+    
+#### 2.1.5 Psu Table ####
+    disarm_flag              = INT
+    arm_status               = INT
+
 ## 3. Platform monitor related CLI refactor ##
 This design is not intend to add new CLI commands or change the original CLI command paramertes and output, it mainly for change the way that CLI get the data.
 
