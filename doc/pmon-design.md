@@ -1,4 +1,12 @@
 # Platform monitor refactoring design #
+
+### Rev 0.1 ###
+
+### Revision
+ | Rev |     Date    |       Author       | Change Description                |
+ |:---:|:-----------:|:------------------:|-----------------------------------|
+ | 0.1 |             | Liu Kebo/Kevin Wang | Initial version                   |
+
 ## 1. New platform API implememtation ##
 Old platform base APIs will be replaced by new designed API gradually. New API is well structed in a hierarchy style, a root "Platform" class include all the chassis in it, and each chassis will containe all the peripheral devices: PSUs, FANs, SFPs, etc.
 
