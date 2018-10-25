@@ -1,19 +1,23 @@
 # Platform monitor refactoring design #
-## 1. New platform API implememtation ##
-Old platform base APIs will be replaced by new designed API gradually. New API is well structed in a hierarchy style, a root "Platform" class include all the chassis in it, and each chassis will containe all the peripheral devices: PSUs, FANs, SFPs, etc.
+## 1. migrate platform API from plugin to new platform API ##
+Old platform base APIs will be replaced by new designed API gradually. New API is well structed in a hierarchy flavor, a root "Platform" class include all the chassis in it, and each chassis will containe all the peripheral devices: PSUs, FANs, SFPs, etc.
 
-As for the vendors, the way to implement the new API will be very similiar, the difference is that individual plugins will be replaced by a "sonic_platform" python package.
+As for the vendors, the way to implement the new API will be very similiar, the different is that individual plugins will be replaced by a "sonic_platform" python package.
 
-Besides existing eeprom, SFP, fan, led and PSU APIs, new base APIs were added for platform, chassis and watchdog.
+Besides eeprom, SFP, fan, led and PSU, new base APIs were added for platform, chassis and watchdog.
 
-New platfrom API is still under developing in this PR: https://github.com/Azure/sonic-platform-common/pull/13
-
+### 1.1 PSU utility migration ###
+### 1.2 SFP utility migration ###
+### 1.3 EEPROM utility migration ###
+### 1.4 LED utility migration ###
+### 1.5 New Chassis platfrom API implementaion ###
+### 1.6 New Fan platfrom API implementation
 ## 2. Export platform related data to DB ##
 Currently when user try to fetch switch peripheral devices related data with CLI, underneath it will directly access hardware via platfrom plugins, in some case it could be very slow, to improvement the performance of these CLI and also for the SNMP maybe, we can collect these data before hand and store them to the DB, and CLI/SNMP will access cached data(DB) instead,  which will be much faster.
 
 Now we already have a Xcvrd daemon which collect SFP related data periodly from SFP eeprom, we may take Xcvrd as reference and add new deamons(like for PSU, fan, etc.). 
 
-During the boot up of the daemons, it will collect the constant data like serial number, manufature name,.... and for the variable ones (tempreture, voltage, fan speed ....) need to be collected periodically. A common data collection flow for these deamons can be like below picture:
+During the start of the daemon, it will collect the constant data like serial number, manufature name,.... and for the variable ones (tempreture, voltage, fan speed ....) need to be collected periodically. A common data collection flow for these deamons can be like below picture:
 
 ![](https://github.com/keboliu/SONiC/blob/gh-pages/images/daemon-flow.svg)
 
@@ -23,14 +27,38 @@ PSU daemon need to collect PSU numbers, PSU status, and PSU fan speed, PSU fan d
 
 
 ### 2.1 DB Schema ###
+To support the new API, a proper Database is required to store the data between daemon and application. Below is the database schema:
+chassis_table: 
+      mac_addr
+      reboot_cause
+      fan_num
+      fan_list
+device_table:
+      device_status
+      device_medel_num
+      device_serial_num
+      change_event
+fan_table:
+      direction
+      speed
+      target_speed
+      speed_tolerance
+      led_status
+platform_table:
+      chassis_num
+      chassis_list
+psu_table:
+      fan_direction
+      fan_speed
+      fan_target_speed
+      fan_speed_telerance
+      fan_led_status
+      psu_num
+      psu_presence
+      psu_status
+      
 ## 3. Platform monitor related CLI refactor ##
-This design is not intend to add new CLI commands or change the original CLI command paramertes and output, it mainly for change the way that CLI get the data.
-
-Take "show platform psustatus" as an example, behind the scene it's calling psu plugin to access the hardware and get the psu status and print out.  In the new design, psu daemon will fetch the psu status and update to DB before hand, thus CLI only need to make use of redis DB APIs and get the informations from the related DB entries.
-
-Transceiver and PSU related CLIs will be refactored. 
-
-## 4. Pmon daemons dynamically loading ##
+## 4. Pmon daemons dynamically load per platfrom capability ##
 
 We have multi pmon daemons for different peripheral devices, like xcvrd for transceivers, ledd for front panel LEDs, etc. Later on we may add more for PSU, fan. 
 
