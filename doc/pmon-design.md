@@ -104,3 +104,4 @@ Lots of items need to be find out before we know the feasibility, see the open q
 1. hw-mgmt package prerequisites? if move it to pmon, need to install all the required packages to pmon.
 2. need to sort out the start chain, if we move hw-mgmt to pmon, means each time we reload config hw-mgmt will restart with pmon,
 some other tasks in other container may have dependncy on it, need more controll on the starting sequence? 
+3. other vendors? the way to manage devices are various on different platforms.
