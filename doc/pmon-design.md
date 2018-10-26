@@ -96,3 +96,11 @@ For now pmon superviosrd have a default configuration file which applied to all 
 To let vedors have different behavior on their platform, can add a customized suervisord configuration file in the platform folder,  to change the behavior of supervisord to have different running daemon set than normal case. 
 
 ## 5. Move hw-management from host to pmon
+
+To make the pmon as the only point that can access devices, we want to move the hw-mgmt from host to pmon container.
+Lots of items need to be find out before we know the feasibility, see the open questions.
+
+## 6. Open Questions
+1. hw-mgmt package prerequisites? if move it to pmon, need to install all the required packages to pmon.
+2. need to sort out the start chain, if we move hw-mgmt to pmon, means each time we reload config hw-mgmt will restart with pmon,
+some other tasks in other container may have dependncy on it, need more controll on the starting sequence? 
