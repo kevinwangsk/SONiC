@@ -39,7 +39,6 @@ PSU daemon need to collect PSU numbers, PSU status, and PSU fan speed, PSU fan d
     fan_list                = STRING_ARRAY   
     psu_num                 = INT
     psu_list                = STRING_ARRAY
-    watchdog                = WATCHDOG_CLASS
     
 #### 2.1.2 Device Table ####
 
@@ -70,7 +69,7 @@ PSU daemon need to collect PSU numbers, PSU status, and PSU fan speed, PSU fan d
     fan_speed_target         = INT
     fan_led_status           = STRING 
     
-#### 2.1.5 Psu Table ####
+#### 2.1.5 Watchdog Table ####
     disarm_flag              = INT
     arm_status               = INT
 
