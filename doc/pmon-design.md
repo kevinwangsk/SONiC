@@ -165,8 +165,9 @@ ARMED       3s
 ```
 
 ### NOTE ###
-Tranceiver related platform base API not defined in this phase, transceiver related CLI will be updated after that.
-for the sfputility, psuutility, user may want to keep a way to get real-time data from hardware rather than from DB for debug purpose, so we may keep sfputility, psuutility and only install them to pmon. 
+Tranceiver and EEPROM related platform base API not defined in this phase, transceiver and EEPROM related CLI will be updated after that. 
+
+For the sfputility, psuutility, user may want to keep a way to get real-time data from hardware rather than from DB for debug purpose, so we may keep sfputility, psuutility and only install them in pmon. 
 
 ## 4. Pmon daemons dynamically loading ##
 
@@ -180,7 +181,7 @@ The starting of the daemons inside pmon is controlled by supervisord, to dynamic
 
 For now pmon superviosrd have a default configuration file which applied to all the platforms by default.
 
-To let vedors have different behavior on their platform, can add a customized suervisord configuration file in the platform folder,  to change the behavior of supervisord to have different running daemon set than normal case. 
+To let vedors have different set of daemons loaded on their platform, can add a customized pmon daemon configuration file in the platform folder, make the start script "start.sh" to parse it, and then load the daemons conditionally.
 
 ## 5. Move hw-management from host to pmon
 
@@ -188,8 +189,9 @@ To make the pmon as the only point that can access devices, we want to move the 
 Lots of items need to be find out before we know the feasibility, see the open questions.
 
 ## 6. Open Questions
-1. hw-mgmt package prerequisites? if move it to pmon, need to install all the required packages to pmon.
-2. need to sort out the start chain, if we move hw-mgmt to pmon, means each time we reload config hw-mgmt will restart with pmon,
+- 1.) For move hw-management from host to pmon
+  - a.) hw-mgmt package prerequisites? if move it to pmon, need to install all the required packages to pmon.
+  - b.) need to sort out the start chain, if we move hw-mgmt to pmon, means each time we reload config hw-mgmt will restart with pmon,
 some other tasks in other container may have dependncy on it, need more controll on the starting sequence? 
-3. other vendors? the way to manage devices are various on different platforms.
-4. For the daemon to response the setting request, need support SNMP set and then daemon maybe need to listen to the DB change which come from SNMP. 
+  - c.) other vendors? the way to manage devices are various on different platforms.
+- 2.) For the daemon to response the setting request, need support SNMP set and then daemon maybe need to listen to the DB change which come from SNMP. 
