@@ -12,7 +12,7 @@ Old platform base APIs will be replaced by new designed API gradually. New API i
 
 As for the vendors, the way to implement the new API will be very similiar, the difference is that individual plugins will be replaced by a "sonic_platform" python package.
 
-Besides existing eeprom, SFP, fan, led and PSU APIs, new base APIs were added for platform, chassis and watchdog. All the APIs defined in the base classes need to be implemented unless there is a limitation(like hardware not support it.) 
+New base APIs were added for platform, chassis, watchdog, FAN and PSU. SFP and eeprom not defined yet, will be in next phase. All the APIs defined in the base classes need to be implemented unless there is a limitation(like hardware not support it.) 
 
 Previously we have an issue with the old implementation, when adding a new platform API to the base class, have to implement it in all the platform plugins, or at least add a dummy stub to them, or it will fail on the platform that doesn't have it. This will be addressed in the new platfrom API design, not part of the work here. 
 
@@ -131,6 +131,37 @@ FAN    SPEED      Direction
 -----  ---------  ---------
 FAN 1  12919 RPM  Intake
 FAN 2  13043 RPM  Exhaust
+```
+
+### 3.4 new show CLI for watchdog status ###
+
+Same as for fan status we add a new sub command to the "show platform":
+
+```
+admin@sonic# show platform ?
+Usage: show platform [OPTIONS] COMMAND [ARGS]...
+
+  Show platform-specific hardware info
+
+Options:
+  -?, -h, --help  Show this message and exit.
+
+Commands:
+  fanstatus  Show fan status information
+  mlnx       Mellanox platform specific configuration...
+  psustatus  Show PSU status information
+  summary    Show hardware platform information
+  syseeprom  Show system EEPROM information
+  watchdog   Show watchdog status
+```
+
+The output of the command is like below:
+```
+admin@sonic# show platform watchdog
+ARM STATUS  EXPIRE TIME
+----------  -----------
+ARMED       3s
+
 ```
 
 ### NOTE ###
