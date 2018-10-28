@@ -33,7 +33,7 @@ Transceiver related new API not defined yet in the first phase. Xcvrd may be nee
 
 Detail datas that need to be collected please see the below DB Schema section.  
 
-Besides data collection, some daemon also need to responese to the request to set device status, for example, fan daemon may need to adjust the fan speed to expected value. (For this part see open questions.)
+Besides data collection, some daemon also need to responese to the request to set device status, for example, fan daemon may need to adjust the fan speed to expected value. (For this part see open questions 2.)
 
 
 ### 2.1 DB Schema ###
@@ -186,7 +186,7 @@ To let vedors have different set of daemons loaded on their platform, can add a 
 ## 5. Move hw-management from host to pmon
 
 To make the pmon as the only point that can access devices, we want to move the hw-mgmt from host to pmon container.
-Lots of items need to be find out before we know the feasibility, see the open questions.
+Lots of items need to be find out before we know the feasibility, see the open questions 1a, 1b, 1c.
 
 ## 6. Open Questions
 - 1.) For move hw-management from host to pmon
