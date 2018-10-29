@@ -12,7 +12,7 @@ Old platform base APIs will be replaced by new designed API gradually. New API i
 
 As for the vendors, the way to implement the new API will be very similiar, the difference is that individual plugins will be replaced by a "sonic_platform" python package.
 
-New base APIs were added for platform, chassis, watchdog, FAN and PSU. SFP and eeprom not defined yet, will be in next phase. All the APIs defined in the base classes need to be implemented unless there is a limitation(like hardware not support it.) 
+New base APIs were added for platform, chassis, watchdog, FAN and PSU. SFP and eeprom not defined yet, will be in next phase. All the APIs defined in the base classes need to be implemented unless there is a limitation(like hardware not support it, see open questions 3) 
 
 Previously we have an issue with the old implementation, when adding a new platform API to the base class, have to implement it in all the platform plugins, or at least add a dummy stub to them, or it will fail on the platform that doesn't have it. This will be addressed in the new platfrom API design, not part of the work here. 
 
@@ -173,25 +173,25 @@ For the sfputility, psuutility, user may want to keep a way to get real-time dat
 
 We have multi pmon daemons for different peripheral devices, like xcvrd for transceivers, ledd for front panel LEDs, etc. Later on we may add more for PSU, fan. 
 
-But not all the platfrom can support all of these daemons due to hardware limitation, in some case some platform may need some special daemons which are not a common. 
+But not all the platfrom can support all of these daemons due to various reasons, in some case some platform may need some special daemons which are not common. 
 
 Thus if we only load the common pmon daemons in all the platfrom without any determination, may encounter into some errors. To avoid this, pmon need a capability to load the daemons dynamically based on specific platfrom.
 
-The starting of the daemons inside pmon is controlled by supervisord, to dynamically control the starting of daemons, an approach is to manipulate supervisord.
+The starting of the daemons inside pmon is controlled by supervisord, to have dynamically control on it, an approach is to manipulate supervisord. For now pmon superviosrd have a common configuration file which applied to all the platforms by default.
 
-For now pmon superviosrd have a default configuration file which applied to all the platforms by default.
+We can add a customized pmon daemon configuration file in the platform folder, make the enhance start script "start.sh" with a parser for this configuration file, and load the daemons conditionally according to the parse result.
 
-To let vedors have different set of daemons loaded on their platform, can add a customized pmon daemon configuration file in the platform folder, make the start script "start.sh" to parse it, and then load the daemons conditionally.
+## 5. Move hardware management functions from host to pmon
 
-## 5. Move hw-management from host to pmon
+The motivation of this change is to make the pmon as the only point that can access peripheral devices, means sysfs can only be accessed from pmon, not from any other place(host, or other containers). 
 
-To make the pmon as the only point that can access devices, we want to move the hw-mgmt from host to pmon container.
-Lots of items need to be find out before we know the feasibility, see the open questions 1a, 1b, 1c.
+Different vendors have different practice in terms of hardware management package impelementing, compiling, installing. Some vendors have independent packages, some provide source files and need build it out. each vendors have to find out how to move theirs hw-mgmt compiling and installing to the pmon
+
+Before hardware management can successfully run inside pmon, some common items for all vendors need to be find out, see open questions 1a, 1b, 1c.
 
 ## 6. Open Questions
 - 1.) For move hw-management from host to pmon
-  - a.) hw-mgmt package prerequisites? if move it to pmon, need to install all the required packages to pmon.
-  - b.) need to sort out the start chain, if we move hw-mgmt to pmon, means each time we reload config hw-mgmt will restart with pmon,
-some other tasks in other container may have dependncy on it, need more controll on the starting sequence? 
-  - c.) other vendors? the way to manage devices are various on different platforms.
-- 2.) For the daemon to response the setting request, need support SNMP set and then daemon maybe need to listen to the DB change which come from SNMP. 
+  - a.) hw-mgmt package prerequisites? if there is, need to address all of them in pmon.
+  - b.) need to sort out the start chain, if we move hw-mgmt to pmon, means each time when we reload config hw-mgmt will restart with pmon, is ther some other tasks in other container have dependncy on it? If yes, need more controll on the starting sequence? 
+- 2.) For the daemon to response the setting request, do we need support SNMP set? For the current way to set devices, like set sfp low power mode, it was triggered by the CLI to call plugins to access hw directly, do we want to triggered from DB(daemons listen to DB changed and response) or the set still directly to platform API and bypass the daemon? 
+- 3.) mlnx platform hardware have watchdog support but lack of driver/fw support?
