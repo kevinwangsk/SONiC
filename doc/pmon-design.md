@@ -79,7 +79,8 @@ Besides data collection, some daemon also need to responese to the request to se
     
 #### 2.1.5 Watchdog Table ####
     disarm_flag              = INT
-    arm_status               = INT
+    arm_status               = BOOLEAN
+    remaining_time           = INT
 
 ## 3. Platform monitor related CLI refactor ##
 ### 3.1 change the way that CLI get the data ##
