@@ -46,34 +46,36 @@ Besides data collection, some daemon also need to responese to the request to se
     psu_num                 = INT
     psu_list                = STRING_ARRAY
     
-#### 2.1.2 Device Table ####
-
+#### 2.1.2 Fan Table ####
+    
     presence                = BOOLEAN                
     model_num               = STRING                
     serial_num              = STRING                   
     status                  = BOOLEAN
-    change_event            = STRING        
-
-#### 2.1.3 Fan Table ####
-
-    direction                = STRING                
-    speed                    = INT                
-    speed_tolerance          = INT                   
-    speed_target             = INT
-    led_status               = STRING 
+    change_event            = STRING   
+    direction               = STRING                
+    speed                   = INT                
+    speed_tolerance         = INT                   
+    speed_target            = INT
+    led_status              = STRING 
     
 
 #### 2.1.3 Platform Table ####
 
-    chassis_num              = INT                
-    chassis_list             = STRING_ARRAY               
+    chassis_num             = INT                
+    chassis_list            = STRING_ARRAY               
 
 #### 2.1.4 Psu Table ####
-    fan_direction            = STRING                
-    fan_speed                = INT                
-    fan_speed_tolerance      = INT                   
-    fan_speed_target         = INT
-    fan_led_status           = STRING 
+    presence                = BOOLEAN                
+    model_num               = STRING                
+    serial_num              = STRING                   
+    status                  = BOOLEAN
+    change_event            = STRING 
+    fan_direction           = STRING                
+    fan_speed               = INT                
+    fan_speed_tolerance     = INT                   
+    fan_speed_target        = INT
+    fan_led_status          = STRING 
     
 #### 2.1.5 Watchdog Table ####
     disarm_flag              = INT
